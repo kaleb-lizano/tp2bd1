@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Empleados</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/x-icon" href="dbicon.png" />
+</head>
+<body>
+  <main class="contenedorPrincipal">
+
+    <!-- Página principal
+         ===================================================== -->
+    <section id="vista-principal" class="contenedorVista">
+
+      <!-- Encabezado -->
+      <div class="encabezadoPrincipal">
+        <div>
+          <h1>Lista de Empleados</h1>
+        </div>
+      </div>
+      <div id="mensaje-principal"></div>
+
+      <!-- Tabla -->
+      <div class="contenedorTabla">
+        <table>
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>Nombre</th>
+              <th>Salario</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-empleados"></tbody>
+        </table>
+      </div>
+
+      <!-- Botón -->
+      <div class="btnInsertar">
+        <button id="btn-mostrar-formulario" class="btn btnPrimario">
+          Insertar
+        </button>
+      </div>
+
+    </section>
+
+    <!-- Insertar
+         ===================================================== -->
+    <section id="vista-formulario" class="contenedorVista oculto">
+
+      <!-- Encabezado -->
+      <div class="encabezadoPrincipal">
+        <div>
+          <h2>Insertar Empleado</h2>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <form id="form-empleado" novalidate>
+
+        <!-- Input nombre -->
+        <div class="agrupacion horizontal">
+          <label for="nombre">Nombre:</label>
+          <div class="bloqueInput">
+            <div class="contenedorInput">
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                maxlength="128"
+                placeholder="Ej: Luis Chaves"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Input salario -->
+        <div class="agrupacion horizontal">
+          <label for="salario">Salario:</label>
+          <div class="bloqueInput">
+            <div class="contenedorInput inputColon">
+              <span>₡</span>
+              <input
+                type="text"
+                id="salario"
+                name="salario"
+                placeholder="200000"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="mensaje-formulario"></div>
+
+        <!-- Botones -->
+        <div class="orientacionBotones">
+          <button type="submit" class="btn btnPrimario">Insertar</button>
+          <button type="button" id="btn-regresar" class="btn btnSecundario">
+            Regresar
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
