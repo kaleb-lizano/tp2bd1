@@ -3,108 +3,134 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gestión de Empleados</title>
+  <title>Control de Vacaciones</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" type="image/x-icon" href="dbicon.png" />
 </head>
 <body>
-  <main class="contenedorPrincipal">
+  <main class="layoutPrincipal">
 
     <!-- Página principal
          ===================================================== -->
     <section id="vista-principal" class="contenedorVista">
 
       <!-- Encabezado -->
-      <div class="encabezadoPrincipal">
+      <div class="encabezadoPrincipal encabezadoConAcciones">
         <div>
-          <h1>Lista de Empleados</h1>
+          <h1>Empleados</h1>
+          <p class="subtituloVista">
+            -
+          </p>
         </div>
+
+      <!-- Botón Formulario -->
+        <button id="btn-mostrar-formulario" class="btn btnPrimario" type="button">
+          Insertar empleado
+        </button>
       </div>
+
       <div id="mensaje-principal"></div>
 
-      <!-- Tabla -->
+      <div class="barraFiltros">
+        <div class="campoFiltro">
+          <label for="filtro-empleado">Buscar por nombre o documento</label>
+          <input
+            type="text"
+            id="filtro-empleado"
+            placeholder="Ej: Perez o 603"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="accionesFiltro">
+          <button id="btn-filtrar" class="btn btnPrimario" type="button">
+            Filtrar
+          </button>
+          <button id="btn-limpiar-filtro" class="btn btnSecundario" type="button">
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabla Empleados -->
       <div class="contenedorTabla">
         <table>
           <thead>
             <tr>
-              <th>id</th>
+              <th>Documento</th>
               <th>Nombre</th>
-              <th>Salario</th>
+              <th>Puesto</th>
+              <th>Saldo vacaciones</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="tabla-empleados"></tbody>
         </table>
       </div>
-
-      <!-- Botón -->
-      <div class="btnInsertar">
-        <button id="btn-mostrar-formulario" class="btn btnPrimario">
-          Insertar
-        </button>
-      </div>
-
     </section>
 
-    <!-- Insertar
-         ===================================================== -->
+      <!-- Insertar Empleado -->
     <section id="vista-formulario" class="contenedorVista oculto">
-
-      <!-- Encabezado -->
       <div class="encabezadoPrincipal">
-        <div>
-          <h2>Insertar Empleado</h2>
-        </div>
+        <h2>Insertar empleado</h2>
+        <p class="subtituloVista">-</p>
       </div>
 
-      <!-- Formulario -->
-      <form id="form-empleado" novalidate>
+      <div id="mensaje-formulario"></div>
 
-        <!-- Input nombre -->
-        <div class="agrupacion horizontal">
-          <label for="nombre">Nombre:</label>
-          <div class="bloqueInput">
-            <div class="contenedorInput">
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                maxlength="128"
-                placeholder="Ej: Luis Chaves"
-              />
-            </div>
-          </div>
+      <!-- Documento -->
+      <form id="form-empleado" class="formulario">
+        <div class="grupoCampo">
+          <label for="valorDocumentoIdentidad">Documento de identidad</label>
+          <input
+            type="text"
+            id="valorDocumentoIdentidad"
+            name="valorDocumentoIdentidad"
+            placeholder="Ingrese el documento"
+            autocomplete="off"
+          />
         </div>
 
-        <!-- Input salario -->
-        <div class="agrupacion horizontal">
-          <label for="salario">Salario:</label>
-          <div class="bloqueInput">
-            <div class="contenedorInput inputColon">
-              <span>₡</span>
-              <input
-                type="text"
-                id="salario"
-                name="salario"
-                placeholder="200000"
-              />
-            </div>
-          </div>
+      <!-- Nombre -->
+        <div class="grupoCampo">
+          <label for="nombreEmpleado">Nombre completo</label>
+          <input
+            type="text"
+            id="nombreEmpleado"
+            name="nombreEmpleado"
+            placeholder="Ingrese el nombre completo"
+            autocomplete="off"
+          />
         </div>
 
-        <!-- Mensajes -->
-        <div id="mensaje-formulario"></div>
+      <!-- Puesto -->
+        <div class="grupoCampo">
+          <label for="puestoEmpleado">Puesto</label>
+          <select id="puestoEmpleado" name="puestoEmpleado">
+            <option value="">Seleccione un puesto</option>
+            <option value="Albañil">Albañil</option>
+            <option value="Asistente">Asistente</option>
+            <option value="Cajero">Cajero</option>
+            <option value="Camarero">Camarero</option>
+            <option value="Conductor">Conductor</option>
+            <option value="Conserje">Conserje</option>
+            <option value="Cuidador">Cuidador</option>
+            <option value="Fontanero">Fontanero</option>
+            <option value="Niñera">Niñera</option>
+            <option value="Recepcionista">Recepcionista</option>
+          </select>
+        </div>
 
-        <!-- Botones -->
-        <div class="orientacionBotones">
-          <button type="submit" class="btn btnPrimario">Insertar</button>
-          <button type="button" id="btn-regresar" class="btn btnSecundario">
-            Regresar
+      <!-- Botones -->
+        <div class="accionesFormulario">
+          <button type="submit" class="btn btnPrimario">Guardar</button>
+          <button type="button" id="btn-cancelar-formulario" class="btn btnSecundario">
+            Cancelar
           </button>
         </div>
-
       </form>
     </section>
-
   </main>
 
   <script src="app.js"></script>

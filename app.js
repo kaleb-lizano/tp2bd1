@@ -1,124 +1,207 @@
-/* Dummies
-   ========================================================= */
-let empleados = [
-  { id: 5, nombre: "Luis Chaves", salario: 200000 },
-  { id: 3, nombre: "Juan Perez", salario: 150000 },
-  { id: 7, nombre: "Ana Rojas", salario: 350000 }
-];
-
-
-/* Conexión con HTML
-   ========================================================= */
+/* HTML
+   ===================================================== */
 const vistaPrincipal = document.getElementById("vista-principal");
 const vistaFormulario = document.getElementById("vista-formulario");
 
-const tablaEmpleados = document.getElementById("tabla-empleados");
 const mensajePrincipal = document.getElementById("mensaje-principal");
 const mensajeFormulario = document.getElementById("mensaje-formulario");
 
+const tablaEmpleados = document.getElementById("tabla-empleados");
+
 const btnMostrarFormulario = document.getElementById("btn-mostrar-formulario");
-const btnRegresar = document.getElementById("btn-regresar");
+const btnCancelarFormulario = document.getElementById("btn-cancelar-formulario");
+
+const inputFiltroEmpleado = document.getElementById("filtro-empleado");
+const btnFiltrar = document.getElementById("btn-filtrar");
+const btnLimpiarFiltro = document.getElementById("btn-limpiar-filtro");
+
 const formEmpleado = document.getElementById("form-empleado");
+const inputDocumento = document.getElementById("valorDocumentoIdentidad");
+const inputNombre = document.getElementById("nombreEmpleado");
+const selectPuesto = document.getElementById("puestoEmpleado");
 
-const inputNombre = document.getElementById("nombre");
-const inputSalario = document.getElementById("salario");
+/* Dummies (Los valores "falsos" para probar)
+   ===================================================== */
+let empleados = [
+  {
+    id: 1,
+    valorDocumentoIdentidad: "6993943",
+    nombre: "Kaitlyn Jensen",
+    puesto: "Camarero",
+    fechaContratacion: "2017-12-07",
+    saldoVacaciones: 12,
+    esActivo: true
+  },
+  {
+    id: 2,
+    valorDocumentoIdentidad: "1896802",
+    nombre: "Robert Buchanan",
+    puesto: "Albañil",
+    fechaContratacion: "2020-09-20",
+    saldoVacaciones: 8,
+    esActivo: true
+  },
+  {
+    id: 3,
+    valorDocumentoIdentidad: "5095109",
+    nombre: "Christina Ward",
+    puesto: "Cajero",
+    fechaContratacion: "2015-09-13",
+    saldoVacaciones: 0,
+    esActivo: false
+  },
+  {
+    id: 4,
+    valorDocumentoIdentidad: "8403646",
+    nombre: "Bradley Wright",
+    puesto: "Fontanero",
+    fechaContratacion: "2020-01-27",
+    saldoVacaciones: 12,
+    esActivo: true
+  },
+  {
+    id: 5,
+    valorDocumentoIdentidad: "6019592",
+    nombre: "Robert Singh",
+    puesto: "Conserje",
+    fechaContratacion: "2017-02-01",
+    saldoVacaciones: 8,
+    esActivo: true
+  },
+  {
+    id: 6,
+    valorDocumentoIdentidad: "4510358",
+    nombre: "Ryan Mitchell",
+    puesto: "Asistente",
+    fechaContratacion: "2018-06-08",
+    saldoVacaciones: 0,
+    esActivo: false
+  },
+  {
+    id: 7,
+    valorDocumentoIdentidad: "7517662",
+    nombre: "Candace Fox",
+    puesto: "Asistente",
+    fechaContratacion: "2013-12-17",
+    saldoVacaciones: 12,
+    esActivo: true
+  },
+  {
+    id: 8,
+    valorDocumentoIdentidad: "8326328",
+    nombre: "Allison Murillo",
+    puesto: "Asistente",
+    fechaContratacion: "2020-04-19",
+    saldoVacaciones: 8,
+    esActivo: true
+  },
+  {
+    id: 9,
+    valorDocumentoIdentidad: "2161775",
+    nombre: "Jessica Murphy",
+    puesto: "Cuidador",
+    fechaContratacion: "2017-04-12",
+    saldoVacaciones: 0,
+    esActivo: false
+  },
+  {
+    id: 10,
+    valorDocumentoIdentidad: "2918773",
+    nombre: "Nancy Newton PhD",
+    puesto: "Fontanero",
+    fechaContratacion: "2016-11-22",
+    saldoVacaciones: 12,
+    esActivo: true
+  }
+];
 
+/* Manejo de vistas
+   ===================================================== */
+function mostrarVista(nombreVista) {
+  if (nombreVista === "principal") {
+    vistaPrincipal.classList.remove("oculto");
+    vistaFormulario.classList.add("oculto");
+    limpiarMensaje(mensajeFormulario);
+    return;
+  }
 
-/* Funciones
-   ========================================================= */
-
-// Mostrar página principal
-function mostrarVistaPrincipal() {
-  vistaFormulario.classList.add("oculto");
-  vistaPrincipal.classList.remove("oculto");
+  if (nombreVista === "formulario") {
+    vistaPrincipal.classList.add("oculto");
+    vistaFormulario.classList.remove("oculto");
+    limpiarMensaje(mensajePrincipal);
+  }
 }
 
-// Mostrar página formulario
-function mostrarVistaFormulario() {
-  vistaPrincipal.classList.add("oculto");
-  vistaFormulario.classList.remove("oculto");
-}
-
-// Limpiar inputs
-function limpiarFormulario() {
-  formEmpleado.reset();
-  mensajeFormulario.innerHTML = "";
-}
-
-// Mostrar mensajes
+/* Mensajes
+   ===================================================== */
 function mostrarMensaje(contenedor, texto, tipo) {
-  const claseTipo = tipo === "error" ? "mensajeError" : "mensajeExito";
-  contenedor.innerHTML = `<div class="mensaje ${claseTipo}">${texto}</div>`;
+  const clase = tipo === "error" ? "mensajeError" : "mensajeExito";
+  contenedor.innerHTML = `<div class="mensaje ${clase}">${texto}</div>`;
 }
 
-// Limpiar mensajes
 function limpiarMensaje(contenedor) {
   contenedor.innerHTML = "";
 }
 
-// Formatear salario
-function formatearSalario(valor) {
-  return "₡ " + Number(valor).toLocaleString("es-CR", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 4
-  });
+/* Formato de datos
+   ===================================================== */
+function formatearSaldo(valor) {
+  return `${Number(valor).toLocaleString("es-CR")} días`;
 }
 
+function formatearFecha(fechaIso) {
+  if (!fechaIso) return "-";
 
-/* Backend
-   ========================================================= */
+  const partes = fechaIso.split("-");
+  if (partes.length !== 3) return fechaIso;
 
-const API_URL = "http://localhost:8081/api/empleados";
+  const [anio, mes, dia] = partes;
+  return `${dia}/${mes}/${anio}`;
+}
 
-// Ordenar empleados
-async function obtenerEmpleados() {
-  const response = await fetch(`${API_URL}/obtenerEmpleados`);
+/* Filtro
+   ===================================================== */
+function detectarTipoFiltro(valor) {
+  const texto = valor.trim();
 
-  if (!response.ok) {
-    throw new Error("No se pudo obtener empleados.");
+  if (!texto) return "todos";
+  if (/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(texto)) return "nombre";
+  if (/^\d+$/.test(texto)) return "documento";
+
+  return "invalido";
+}
+
+function filtrarEmpleados(lista, filtro) {
+  const texto = filtro.trim().toLowerCase();
+  const tipo = detectarTipoFiltro(filtro);
+
+  if (tipo === "todos") return lista;
+
+  if (tipo === "nombre") {
+    return lista.filter((empleado) =>
+      empleado.nombre.toLowerCase().includes(texto)
+    );
   }
 
-  const data = await response.json();
-
-  return data.map((empleado) => ({
-    id: empleado.Id,
-    nombre: empleado.Nombre,
-    salario: empleado.Salario,
-  }));
-}
-
-// Insertar empleado
-async function insertarEmpleado(nuevoEmpleado) {
-  const response = await fetch(`${API_URL}/insertarEmpleado`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(nuevoEmpleado),
-  });
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || "No se pudo insertar empleado.");
+  if (tipo === "documento") {
+    return lista.filter((empleado) =>
+      empleado.valorDocumentoIdentidad.includes(filtro.trim())
+    );
   }
 
-  return data;
+  return null;
 }
 
-/* Mostrar datos de la tabla
-   ========================================================= */
-
-async function cargarTabla() {
+/* Tabla
+   ===================================================== */
+function cargarTabla(lista = empleados) {
   limpiarMensaje(mensajePrincipal);
   tablaEmpleados.innerHTML = "";
 
-  const lista = await obtenerEmpleados();
-
-  if (lista.length === 0) {
+  if (!lista || lista.length === 0) {
     tablaEmpleados.innerHTML = `
       <tr>
-        <td colspan="3">No hay empleados registrados.</td>
+        <td colspan="6">No se encontraron empleados.</td>
       </tr>
     `;
     return;
@@ -128,101 +211,181 @@ async function cargarTabla() {
     const fila = document.createElement("tr");
 
     fila.innerHTML = `
-      <td>${empleado.id}</td>
+      <td>${empleado.valorDocumentoIdentidad}</td>
       <td>${empleado.nombre}</td>
-      <td>${formatearSalario(empleado.salario)}</td>
+      <td>${empleado.puesto}</td>
+      <td>${formatearSaldo(empleado.saldoVacaciones)}</td>
+      <td class="${empleado.esActivo ? "estadoActivo" : "estadoInactivo"}">
+        ${empleado.esActivo ? "Activo" : "Inactivo"}
+      </td>
+      <td>
+        <div class="accionesTabla">
+          <button class="btn btnSecundario btnAccion" onclick="consultarEmpleado(${empleado.id})">
+            Consultar
+          </button>
+          <button class="btn btnSecundario btnAccion" onclick="editarEmpleado(${empleado.id})">
+            Editar
+          </button>
+          <button class="btn btnSecundario btnAccion" onclick="eliminarEmpleado(${empleado.id})">
+            Eliminar
+          </button>
+          <button class="btn btnPrimario btnAccion" onclick="verMovimientos(${empleado.id})">
+            Movimientos
+          </button>
+        </div>
+      </td>
     `;
 
     tablaEmpleados.appendChild(fila);
   });
 }
 
-
-/* Validaciones
-   ========================================================= */
-
-// Validar nombre (Expresión regular)
-function validarNombre(nombre) {
-  const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ]+(?:[ -][A-Za-zÁÉÍÓÚáéíóúÑñ]+)*$/;
-  return regex.test(nombre);
+/* Formulario
+   ===================================================== */
+function limpiarFormulario() {
+  formEmpleado.reset();
 }
 
-// Validar salario (Expresión regular)
-function validarSalario(salario) {
-  const valor = salario.trim();
-  const regex = /^(0|[1-9]\d*)(\.\d{1,4})?$/;
-  return regex.test(valor) && Number(valor) > 0;
+function validarFormularioEmpleado() {
+  const documento = inputDocumento.value.trim();
+  const nombre = inputNombre.value.trim();
+  const puesto = selectPuesto.value;
+
+  if (!documento || !nombre || !puesto) {
+    return "Todos los campos son obligatorios.";
+  }
+
+  if (!/^\d+$/.test(documento)) {
+    return "El documento debe contener solo números.";
+  }
+
+  if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(nombre)) {
+    return "El nombre debe contener solo letras y espacios.";
+  }
+
+  const existeDocumento = empleados.some(
+    (empleado) => empleado.valorDocumentoIdentidad === documento
+  );
+
+  if (existeDocumento) {
+    return "Ya existe un empleado con ese documento.";
+  }
+
+  const existeNombre = empleados.some(
+    (empleado) => empleado.nombre.toLowerCase() === nombre.toLowerCase()
+  );
+
+  if (existeNombre) {
+    return "Ya existe un empleado con ese nombre.";
+  }
+
+  return null;
 }
 
+function insertarEmpleadoTemporal() {
+  const nuevoEmpleado = {
+    id: empleados.length > 0 ? Math.max(...empleados.map((e) => e.id)) + 1 : 1,
+    valorDocumentoIdentidad: inputDocumento.value.trim(),
+    nombre: inputNombre.value.trim(),
+    puesto: selectPuesto.value,
+    fechaContratacion: new Date().toISOString().split("T")[0],
+    saldoVacaciones: 0,
+    esActivo: true
+  };
 
-/* Interacciones
-   ========================================================= */
+  empleados.push(nuevoEmpleado);
+}
 
-// Mostrar formulario
+/* Acciones de fila (temporales)
+   ===================================================== */
+function consultarEmpleado(id) {
+  mostrarMensaje(
+    mensajePrincipal,
+    `Consultar empleado ${id} aún no implementado.`,
+    "success"
+  );
+}
+
+function editarEmpleado(id) {
+  mostrarMensaje(
+    mensajePrincipal,
+    `Editar empleado ${id} aún no implementado.`,
+    "success"
+  );
+}
+
+function eliminarEmpleado(id) {
+  mostrarMensaje(
+    mensajePrincipal,
+    `Eliminar empleado ${id} aún no implementado.`,
+    "success"
+  );
+}
+
+function verMovimientos(id) {
+  mostrarMensaje(
+    mensajePrincipal,
+    `Movimientos del empleado ${id} aún no implementados.`,
+    "success"
+  );
+}
+
+/* Eventos
+   ===================================================== */
 btnMostrarFormulario.addEventListener("click", () => {
   limpiarFormulario();
-  mostrarVistaFormulario();
+  limpiarMensaje(mensajeFormulario);
+  mostrarVista("formulario");
 });
 
-// Regresar a tabla
-btnRegresar.addEventListener("click", () => {
+btnCancelarFormulario.addEventListener("click", () => {
   limpiarFormulario();
-  mostrarVistaPrincipal();
+  mostrarVista("principal");
 });
 
-// Envío del formulario
-formEmpleado.addEventListener("submit", async (event) => {
-  event.preventDefault();
+btnFiltrar.addEventListener("click", () => {
+  limpiarMensaje(mensajePrincipal);
 
+  const filtro = inputFiltroEmpleado.value;
+  const tipo = detectarTipoFiltro(filtro);
+
+  if (tipo === "invalido") {
+    mostrarMensaje(
+      mensajePrincipal,
+      "El filtro solo puede contener letras y espacios, o solo números.",
+      "error"
+    );
+    return;
+  }
+
+  const resultado = filtrarEmpleados(empleados, filtro);
+  cargarTabla(resultado);
+});
+
+btnLimpiarFiltro.addEventListener("click", () => {
+  inputFiltroEmpleado.value = "";
+  limpiarMensaje(mensajePrincipal);
+  cargarTabla(empleados);
+});
+
+formEmpleado.addEventListener("submit", (event) => {
+  event.preventDefault();
   limpiarMensaje(mensajeFormulario);
 
-  const nombre = inputNombre.value.trim();
-  const salario = inputSalario.value.trim();
+  const error = validarFormularioEmpleado();
 
-  // Validaciones (Interacciones)
-  if (!nombre || !salario) {
-    mostrarMensaje(
-      mensajeFormulario,
-      "Los campos nombre y salario no pueden estar vacíos.",
-      "error"
-    );
+  if (error) {
+    mostrarMensaje(mensajeFormulario, error, "error");
     return;
   }
 
-  if (!validarNombre(nombre)) {
-    mostrarMensaje(
-      mensajeFormulario,
-      "El nombre solo puede contener letras, espacios o guion.",
-      "error"
-    );
-    return;
-  }
-
-  if (!validarSalario(salario)) {
-    mostrarMensaje(
-      mensajeFormulario,
-      "El salario debe ser un valor válido.",
-      "error"
-    );
-    return;
-  }
-
-  // Inserción
-  try {
-    await insertarEmpleado({ nombre, salario });
-
-    limpiarFormulario();
-    await cargarTabla();
-    mostrarVistaPrincipal();
-
-    mostrarMensaje(mensajePrincipal, "Inserción exitosa.", "success");
-
-  } catch (error) {
-    mostrarMensaje(mensajeFormulario, error.message, "error");
-  }
+  insertarEmpleadoTemporal();
+  limpiarFormulario();
+  cargarTabla(empleados);
+  mostrarVista("principal");
+  mostrarMensaje(mensajePrincipal, "Empleado agregado temporalmente a la UI.", "success");
 });
 
-
-/* Iniciar
-   ========================================================= */
-cargarTabla();
+/* Inicialización
+   ===================================================== */
+cargarTabla(empleados);
