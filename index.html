@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" type="image/x-icon" href="dbicon.png" />
 </head>
-<body>
+<body data-page="app">
   <main class="layoutPrincipal">
 
     <!-- Página principal
@@ -19,25 +19,32 @@
         <div>
           <h1>Empleados</h1>
           <p class="subtituloVista">
-            -
+            Placeholder
           </p>
+          <p id="usuario-activo" class="usuarioActivo"></p>
         </div>
 
-      <!-- Botón Formulario -->
-        <button id="btn-mostrar-formulario" class="btn btnPrimario" type="button">
-          Insertar empleado
-        </button>
+        <!-- Acciones principales -->
+        <div class="accionesFiltro">
+          <button id="btn-mostrar-formulario" class="btn btnPrimario" type="button">
+            Insertar empleado
+          </button>
+          <button id="btn-logout" class="btn btnSecundario" type="button">
+            Cerrar sesión
+          </button>
+        </div>
       </div>
 
       <div id="mensaje-principal"></div>
 
+      <!-- Filtros -->
       <div class="barraFiltros">
         <div class="campoFiltro">
           <label for="filtro-empleado">Buscar por nombre o documento</label>
           <input
             type="text"
             id="filtro-empleado"
-            placeholder="Ej: Perez o 603"
+            placeholder="Nombre / Documento"
             autocomplete="off"
           />
         </div>
@@ -70,17 +77,22 @@
       </div>
     </section>
 
-      <!-- Insertar Empleado -->
+    <!-- Insertar o editar empleado
+         ===================================================== -->
     <section id="vista-formulario" class="contenedorVista oculto">
       <div class="encabezadoPrincipal">
-        <h2>Insertar empleado</h2>
-        <p class="subtituloVista">-</p>
+        <h2 id="titulo-formulario">Insertar empleado</h2>
+        <p class="subtituloVista">
+          placeholder
+        </p>
       </div>
 
       <div id="mensaje-formulario"></div>
 
-      <!-- Documento -->
       <form id="form-empleado" class="formulario">
+        <input type="hidden" id="idEmpleadoEditar" />
+
+        <!-- Documento -->
         <div class="grupoCampo">
           <label for="valorDocumentoIdentidad">Documento de identidad</label>
           <input
@@ -92,7 +104,7 @@
           />
         </div>
 
-      <!-- Nombre -->
+        <!-- Nombre -->
         <div class="grupoCampo">
           <label for="nombreEmpleado">Nombre completo</label>
           <input
@@ -104,25 +116,13 @@
           />
         </div>
 
-      <!-- Puesto -->
+        <!-- Puesto -->
         <div class="grupoCampo">
           <label for="puestoEmpleado">Puesto</label>
-          <select id="puestoEmpleado" name="puestoEmpleado">
-            <option value="">Seleccione un puesto</option>
-            <option value="Albañil">Albañil</option>
-            <option value="Asistente">Asistente</option>
-            <option value="Cajero">Cajero</option>
-            <option value="Camarero">Camarero</option>
-            <option value="Conductor">Conductor</option>
-            <option value="Conserje">Conserje</option>
-            <option value="Cuidador">Cuidador</option>
-            <option value="Fontanero">Fontanero</option>
-            <option value="Niñera">Niñera</option>
-            <option value="Recepcionista">Recepcionista</option>
-          </select>
+          <select id="puestoEmpleado" name="puestoEmpleado"></select>
         </div>
 
-      <!-- Botones -->
+        <!-- Botones -->
         <div class="accionesFormulario">
           <button type="submit" class="btn btnPrimario">Guardar</button>
           <button type="button" id="btn-cancelar-formulario" class="btn btnSecundario">
@@ -131,7 +131,99 @@
         </div>
       </form>
     </section>
+
+    <!-- Listar movimientos
+         ===================================================== -->
+    <section id="vista-movimientos" class="contenedorVista oculto">
+      <div class="encabezadoPrincipal encabezadoConAcciones">
+        <div>
+          <h2>Movimientos de vacaciones</h2>
+          <p id="resumen-empleado-movimientos" class="subtituloVista"></p>
+        </div>
+
+        <div class="accionesFiltro">
+          <button id="btn-mostrar-movimiento" class="btn btnPrimario" type="button">
+            Insertar movimiento
+          </button>
+          <button id="btn-volver-desde-movimientos" class="btn btnSecundario" type="button">
+            Volver
+          </button>
+        </div>
+      </div>
+
+      <div id="mensaje-movimientos"></div>
+
+      <!-- Tabla Movimientos -->
+      <div class="contenedorTabla">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Nuevo saldo</th>
+              <th>Usuario</th>
+              <th>IP</th>
+              <th>PostTime</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-movimientos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Insertar movimiento
+         ===================================================== -->
+    <section id="vista-formulario-movimiento" class="contenedorVista oculto">
+      <div class="encabezadoPrincipal">
+        <h2>Insertar movimiento</h2>
+        <p id="resumen-empleado-form-movimiento" class="subtituloVista"></p>
+      </div>
+
+      <div id="mensaje-formulario-movimiento"></div>
+
+      <form id="form-movimiento" class="formulario">
+
+        <!-- Tipo de movimiento -->
+        <div class="grupoCampo">
+          <label for="tipoMovimiento">Tipo de movimiento</label>
+          <select id="tipoMovimiento"></select>
+        </div>
+
+        <!-- Monto -->
+        <div class="grupoCampo">
+          <label for="montoMovimiento">Monto</label>
+          <input
+            type="number"
+            id="montoMovimiento"
+            min="1"
+            step="1"
+            placeholder="Ej: 2"
+          />
+        </div>
+
+        <!-- Botones -->
+        <div class="accionesFormulario">
+          <button type="submit" class="btn btnPrimario">Guardar movimiento</button>
+          <button type="button" id="btn-cancelar-movimiento" class="btn btnSecundario">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </section>
   </main>
+
+  <!-- Modal Consulta Empleado
+       ===================================================== -->
+  <div id="modal-detalle" class="modal oculto" role="dialog" aria-modal="true">
+    <div class="modalContenido">
+      <h2>Consulta de empleado</h2>
+      <div id="detalle-empleado"></div>
+      <button id="btn-cerrar-modal" class="btn btnPrimario" type="button">
+        Cerrar
+      </button>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
