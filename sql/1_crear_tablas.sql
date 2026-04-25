@@ -16,7 +16,7 @@ CREATE TABLE [dbo].[Empleado]
 	, [ValorDocumentoIdentidad] VARCHAR(16) NOT NULL
 	, [Nombre] VARCHAR(128) NOT NULL
 	, [FechaContratacion] DATE NOT NULL
-	, [SaldoVacaciones] DECIMAL(4,2) NOT NULL
+	, [SaldoVacaciones] FLOAT NOT NULL
 	, [EsActivo] BIT NOT NULL
 	, CONSTRAINT [FK_Empleado_Puesto]
 		FOREIGN KEY ([IdPuesto])
@@ -32,14 +32,22 @@ CREATE TABLE [dbo].[TipoMovimiento]
 );
 GO
 
+CREATE TABLE [dbo].[Usuario]
+(
+	[Id] INT IDENTITY(1,1) PRIMARY KEY
+	, [Username] VARCHAR(128) NOT NULL
+	, [Password] VARCHAR(128) NOT NULL
+);
+GO
+
 CREATE TABLE [dbo].[Movimiento]
 (
 	[Id] INT IDENTITY(1,1) PRIMARY KEY
 	, [IdEmpleado] INT NOT NULL
 	, [IdTipoMovimiento] INT NOT NULL
 	, [Fecha] DATE NOT NULL
-	, [Monto] MONEY NOT NULL
-	, [NuevoSaldo] MONEY NOT NULL
+	, [Monto] FLOAT NOT NULL
+	, [NuevoSaldo] FLOAT NOT NULL
 	, [IdPostByUser] INT NOT NULL
 	, [PostInIP] VARCHAR(128) NOT NULL
 	, [PostTime] DATETIME NOT NULL
@@ -55,14 +63,6 @@ CREATE TABLE [dbo].[Movimiento]
 );
 GO
 
-CREATE TABLE [dbo].[Usuario]
-(
-	[Id] INT IDENTITY(1,1) PRIMARY KEY
-	, [Username] VARCHAR(128) NOT NULL
-	, [Password] VARCHAR(128) NOT NULL
-);
-GO
-
 CREATE TABLE [dbo].[TipoEvento]
 (
 	[Id] INT IDENTITY(1,1) PRIMARY KEY
@@ -74,7 +74,7 @@ CREATE TABLE [dbo].[BitacoraEvento]
 (
 	[Id] INT IDENTITY(1,1) PRIMARY KEY
 	, [IdTipoEvento] INT NOT NULL
-	, [Descripcion] VARCHAR(256) NOT NULL
+	, [Descripcion] VARCHAR(MAX) NOT NULL
 	, [IdPostByUser] INT NOT NULL
 	, [PostInIP] VARCHAR(128) NOT NULL
 	, [PostTime] DATETIME NOT NULL
@@ -91,7 +91,7 @@ CREATE TABLE [dbo].[Error]
 (
 	[Id] INT IDENTITY(1,1) PRIMARY KEY
 	, [Codigo] VARCHAR(8) NOT NULL
-	, [Descripcion] VARCHAR(256) NOT NULL
+	, [Descripcion] VARCHAR(MAX) NOT NULL
 );
 GO
 
@@ -103,8 +103,8 @@ CREATE TABLE [dbo].[DBError]
 	, [State] INT NOT NULL
 	, [Severity] INT NOT NULL
 	, [Line] INT NOT NULL
-	, [Procedure] VARCHAR(128) NULL
-	, [Message] VARCHAR(256) NOT NULL
+	, [Procedure] VARCHAR(MAX) NULL
+	, [Message] VARCHAR(MAX) NOT NULL
 	, [DateTime] DATETIME NOT NULL
 );
 GO
