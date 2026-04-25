@@ -93,7 +93,7 @@ function limpiarFormularioEmpleado() {
   $("form-empleado").reset();
   $("idEmpleadoEditar").value = "";
   $("titulo-formulario").textContent = "Insertar empleado";
-  $("subtitulo-formulario").textContent = "El id permanece oculto. El saldo no se edita desde esta pantalla.";
+  $("subtitulo-formulario").textContent = "Ingrese los datos del nuevo empleado o modifique los datos del empleado seleccionado.";
 }
 
 function consultarEmpleado(id) {
