@@ -13,7 +13,7 @@ BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
-        INSERT INTO [dbo].[BitacoraEvento]
+        INSERT [dbo].[BitacoraEvento]
         (
             [IdTipoEvento]
             , [Descripcion]
@@ -45,6 +45,6 @@ BEGIN
             SUSER_SNAME(), ERROR_NUMBER(), ERROR_STATE(), ERROR_SEVERITY()
             , ERROR_LINE(), ERROR_PROCEDURE(), ERROR_MESSAGE(), GETDATE()
         );
-    END CATCH
-END
+    END CATCH;
+END;
 GO

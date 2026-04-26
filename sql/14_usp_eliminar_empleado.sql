@@ -1,24 +1,27 @@
 USE [TareaProgramadaDos];
 GO
 
-CREATE PROCEDURE [dbo].[usp_ObtenerUsuarioPorUsername]
-    @inUsername VARCHAR(128)
+CREATE PROCEDURE [dbo].[usp_EliminarEmpleado]
+    @inValorDocumentoIdentidad VARCHAR(16)
     , @outResultCode INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
-        SELECT
-            U.[Id]
-            , U.[Username]
-            , U.[Password]
-        FROM [dbo].[Usuario] AS U
-        WHERE (U.[Username] = @inUsername);
+        BEGIN TRANSACTION
+            UPDATE E
+            SET E.[EsActivo] = 0
+            FROM [dbo].[Empleado] AS E
+            WHERE (E.[ValorDocumentoIdentidad] = @inValorDocumentoIdentidad);
+        COMMIT;
 
         SET @outResultCode = 0;
     END TRY
     BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
         SET @outResultCode = 50008;
 
         INSERT INTO [dbo].[DBError]
@@ -34,3 +37,4 @@ BEGIN
     END CATCH;
 END;
 GO
+

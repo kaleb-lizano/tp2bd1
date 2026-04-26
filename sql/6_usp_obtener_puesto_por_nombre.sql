@@ -1,8 +1,8 @@
 USE [TareaProgramadaDos];
 GO
 
-CREATE PROCEDURE [dbo].[usp_ObtenerUsuarioPorUsername]
-    @inUsername VARCHAR(128)
+CREATE PROCEDURE [dbo].[usp_ObtenerPuestoPorNombre]
+    @inNombrePuesto VARCHAR(128)
     , @outResultCode INT OUTPUT
 AS
 BEGIN
@@ -10,11 +10,11 @@ BEGIN
 
     BEGIN TRY
         SELECT
-            U.[Id]
-            , U.[Username]
-            , U.[Password]
-        FROM [dbo].[Usuario] AS U
-        WHERE (U.[Username] = @inUsername);
+            P.[Id]
+            , P.[Nombre]
+            , P.[SalarioxHora]
+        FROM [dbo].[Puesto] AS P
+        WHERE (P.[Nombre] = @inNombrePuesto);
 
         SET @outResultCode = 0;
     END TRY

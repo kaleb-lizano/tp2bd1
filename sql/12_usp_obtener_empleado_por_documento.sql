@@ -1,8 +1,8 @@
 USE [TareaProgramadaDos];
 GO
 
-CREATE PROCEDURE [dbo].[usp_ObtenerUsuarioPorUsername]
-    @inUsername VARCHAR(128)
+CREATE PROCEDURE [dbo].[usp_ObtenerEmpleadoPorDocumento]
+    @inValorDocumentoIdentidad VARCHAR(16)
     , @outResultCode INT OUTPUT
 AS
 BEGIN
@@ -10,11 +10,18 @@ BEGIN
 
     BEGIN TRY
         SELECT
-            U.[Id]
-            , U.[Username]
-            , U.[Password]
-        FROM [dbo].[Usuario] AS U
-        WHERE (U.[Username] = @inUsername);
+            E.[Id]
+            , E.[ValorDocumentoIdentidad]
+            , E.[Nombre]
+            , P.[Nombre] AS [NombrePuesto]
+            , E.[SaldoVacaciones]
+            , E.[EsActivo]
+            , E.[FechaContratacion]
+            , E.[IdPuesto]
+        FROM [dbo].[Empleado] AS E
+        INNER JOIN [dbo].[Puesto] AS P
+            ON (E.[IdPuesto] = P.[Id])
+        WHERE (E.[ValorDocumentoIdentidad] = @inValorDocumentoIdentidad);
 
         SET @outResultCode = 0;
     END TRY
