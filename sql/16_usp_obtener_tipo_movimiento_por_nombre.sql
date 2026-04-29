@@ -1,8 +1,8 @@
 USE [TareaProgramadaDos];
 GO
 
-CREATE PROCEDURE [dbo].[usp_ObtenerEmpleadoPorNombre]
-    @inNombre VARCHAR(128)
+CREATE PROCEDURE [dbo].[usp_ObtenerTipoMovimientoPorNombre]
+    @inNombreTipoMovimiento VARCHAR(128)
     , @outResultCode INT OUTPUT
 AS
 BEGIN
@@ -10,17 +10,11 @@ BEGIN
 
     BEGIN TRY
         SELECT
-            E.[ValorDocumentoIdentidad]
-            , E.[Nombre]
-            , P.[Nombre] AS [NombrePuesto]
-            , E.[SaldoVacaciones]
-            , E.[EsActivo]
-            , E.[FechaContratacion]
-            , E.[IdPuesto]
-        FROM [dbo].[Empleado] AS E
-        INNER JOIN [dbo].[Puesto] AS P
-            ON (E.[IdPuesto] = P.[Id])
-        WHERE (E.[Nombre] = @inNombre);
+            TM.[Id]
+            , TM.[Nombre]
+            , TM.[TipoAccion]
+        FROM [dbo].[TipoMovimiento] AS TM
+        WHERE (TM.[Nombre] = @inNombreTipoMovimiento);
 
         SET @outResultCode = 0;
     END TRY

@@ -1,9 +1,12 @@
 USE [TareaProgramadaDos];
 GO
 
-CREATE PROCEDURE [dbo].[usp_RegistrarEvento]
-    @inIdTipoEvento INT
-    , @inDescripcion VARCHAR(MAX)
+CREATE PROCEDURE [dbo].[usp_InsertarMovimiento]
+    @inValorDocumentoIdentidad VARCHAR(16)
+    , @inNombreTipoMovimiento VARCHAR(128)
+    , @inFecha DATE
+    , @inMonto FLOAT
+    , @inNuevoSaldo FLOAT
     , @inPostByUser VARCHAR(128)
     , @inPostInIP VARCHAR(128)
     , @inPostTime DATETIME
@@ -14,18 +17,32 @@ BEGIN
 
     BEGIN TRY
         BEGIN TRANSACTION
-            INSERT [dbo].[BitacoraEvento]
+            INSERT [dbo].[Movimiento]
             (
-                [IdTipoEvento]
-                , [Descripcion]
+                [IdEmpleado]
+                , [IdTipoMovimiento]
+                , [Fecha]
+                , [Monto]
+                , [NuevoSaldo]
                 , [IdPostByUser]
                 , [PostInIP]
                 , [PostTime]
             )
             VALUES
             (
-                @inIdTipoEvento
-                , @inDescripcion
+                (
+                    SELECT E.[Id]
+                    FROM [dbo].[Empleado] AS E
+                    WHERE (E.[ValorDocumentoIdentidad] = @inValorDocumentoIdentidad)
+                )
+                , (
+                    SELECT TM.[Id]
+                    FROM [dbo].[TipoMovimiento] AS TM
+                    WHERE (TM.[Nombre] = @inNombreTipoMovimiento)
+                )
+                , @inFecha
+                , @inMonto
+                , @inNuevoSaldo
                 , (
                     SELECT U.[Id]
                     FROM [dbo].[Usuario] AS U
@@ -34,6 +51,11 @@ BEGIN
                 , @inPostInIP
                 , @inPostTime
             );
+
+            UPDATE E
+            SET E.[SaldoVacaciones] = @inNuevoSaldo
+            FROM [dbo].[Empleado] AS E
+            WHERE (E.[ValorDocumentoIdentidad] = @inValorDocumentoIdentidad);
         COMMIT;
 
         SET @outResultCode = 0;
@@ -57,3 +79,4 @@ BEGIN
     END CATCH;
 END;
 GO
+

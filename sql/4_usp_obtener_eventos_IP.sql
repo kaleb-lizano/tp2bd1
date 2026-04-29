@@ -4,6 +4,7 @@ GO
 CREATE PROCEDURE [dbo].[usp_ObtenerEventosPorIP]
     @inPostInIP VARCHAR(128)
     , @inIdTipoEvento INT
+    , @inUsername VARCHAR(128)
     , @outResultCode INT OUTPUT
 AS
 BEGIN
@@ -14,8 +15,11 @@ BEGIN
             E.[PostTime]
             , E.[Descripcion]
         FROM [dbo].[BitacoraEvento] AS E
+        INNER JOIN [dbo].[Usuario] AS U
+            ON (E.[IdPostByUser] = U.[Id])
         WHERE (E.[PostInIP] = @inPostInIP)
-            AND (E.[IdTipoEvento] = @inIdTipoEvento);
+            AND (E.[IdTipoEvento] = @inIdTipoEvento)
+            AND (U.[Username] = @inUsername);
 
         SET @outResultCode = 0;
     END TRY

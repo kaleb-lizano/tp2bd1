@@ -5,7 +5,7 @@ CREATE PROCEDURE [dbo].[usp_ActualizarEmpleado]
     @inValorDocumentoActual VARCHAR(16)
     , @inValorDocumentoNuevo VARCHAR(16)
     , @inNombreNuevo VARCHAR(128)
-    , @inIdPuesto INT
+    , @inNombrePuesto VARCHAR(128)
     , @outResultCode INT OUTPUT
 AS
 BEGIN
@@ -43,7 +43,11 @@ BEGIN
             SET
                 E.[ValorDocumentoIdentidad] = @inValorDocumentoNuevo
                 , E.[Nombre] = @inNombreNuevo
-                , E.[IdPuesto] = @inIdPuesto
+                , E.[IdPuesto] = (
+                    SELECT P.[Id]
+                    FROM [dbo].[Puesto] AS P
+                    WHERE (P.[Nombre] = @inNombrePuesto)
+                )
             FROM [dbo].[Empleado] AS E
             WHERE (E.[ValorDocumentoIdentidad] = @inValorDocumentoActual);
         COMMIT;
@@ -69,3 +73,4 @@ BEGIN
     END CATCH;
 END;
 GO
+

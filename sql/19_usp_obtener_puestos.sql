@@ -1,26 +1,18 @@
 USE [TareaProgramadaDos];
 GO
 
-CREATE PROCEDURE [dbo].[usp_ObtenerEmpleadoPorNombre]
-    @inNombre VARCHAR(128)
-    , @outResultCode INT OUTPUT
+CREATE PROCEDURE [dbo].[usp_ObtenerPuestos]
+    @outResultCode INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     BEGIN TRY
         SELECT
-            E.[ValorDocumentoIdentidad]
-            , E.[Nombre]
-            , P.[Nombre] AS [NombrePuesto]
-            , E.[SaldoVacaciones]
-            , E.[EsActivo]
-            , E.[FechaContratacion]
-            , E.[IdPuesto]
-        FROM [dbo].[Empleado] AS E
-        INNER JOIN [dbo].[Puesto] AS P
-            ON (E.[IdPuesto] = P.[Id])
-        WHERE (E.[Nombre] = @inNombre);
+            P.[Id]
+            , P.[Nombre]
+            , P.[SalarioxHora]
+        FROM [dbo].[Puesto] AS P;
 
         SET @outResultCode = 0;
     END TRY
@@ -37,6 +29,6 @@ BEGIN
             SUSER_SNAME(), ERROR_NUMBER(), ERROR_STATE(), ERROR_SEVERITY()
             , ERROR_LINE(), ERROR_PROCEDURE(), ERROR_MESSAGE(), GETDATE()
         );
-    END CATCH;
+    END CATCH
 END;
 GO

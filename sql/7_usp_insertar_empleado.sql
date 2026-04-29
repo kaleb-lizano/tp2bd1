@@ -4,7 +4,7 @@ GO
 CREATE PROCEDURE [dbo].[usp_InsertarEmpleado]
     @inValorDocumentoIdentidad VARCHAR(16)
     , @inNombre VARCHAR(128)
-    , @inIdPuesto INT
+    , @inNombrePuesto VARCHAR(128)
     , @inFechaContratacion DATE
     , @inSaldoVacaciones FLOAT
     , @inEsActivo BIT
@@ -34,28 +34,37 @@ BEGIN
             RETURN;
         END;
 
-        INSERT [dbo].[Empleado]
-        (
-            [IdPuesto]
-            , [ValorDocumentoIdentidad]
-            , [Nombre]
-            , [FechaContratacion]
-            , [SaldoVacaciones]
-            , [EsActivo]
-        )
-        VALUES
-        (
-            @inIdPuesto
-            , @inValorDocumentoIdentidad
-            , @inNombre
-            , @inFechaContratacion
-            , @inSaldoVacaciones
-            , @inEsActivo
-        );
+        BEGIN TRANSACTION
+            INSERT [dbo].[Empleado]
+            (
+                [IdPuesto]
+                , [ValorDocumentoIdentidad]
+                , [Nombre]
+                , [FechaContratacion]
+                , [SaldoVacaciones]
+                , [EsActivo]
+            )
+            VALUES
+            (
+                (
+                    SELECT P.[Id]
+                    FROM [dbo].[Puesto] AS P
+                    WHERE (P.[Nombre] = @inNombrePuesto)
+                )
+                , @inValorDocumentoIdentidad
+                , @inNombre
+                , @inFechaContratacion
+                , @inSaldoVacaciones
+                , @inEsActivo
+            );
+        COMMIT;
 
         SET @outResultCode = 0;
     END TRY
     BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+
         SET @outResultCode = 50008;
 
         INSERT INTO [dbo].[DBError]
@@ -71,3 +80,4 @@ BEGIN
     END CATCH;
 END;
 GO
+

@@ -25,6 +25,7 @@ BEGIN
 
         SET @outResultCode = 0;
     END TRY
+
     BEGIN CATCH
         SET @outResultCode = 50008;
 
