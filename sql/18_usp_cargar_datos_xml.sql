@@ -18,7 +18,12 @@ BEGIN
         SELECT
             X.Y.value('@Nombre', 'VARCHAR(128)')
             , X.Y.value('@SalarioxHora', 'MONEY')
-        FROM @inXml.nodes('/Datos/Puestos/Puesto') AS X(Y);
+        FROM @inXml.nodes('/Datos/Puestos/Puesto') AS X(Y)
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM [dbo].[Puesto] AS P
+            WHERE (P.[Nombre] = X.Y.value('@Nombre', 'VARCHAR(128)'))
+        );
 
         SET IDENTITY_INSERT [dbo].[TipoEvento] ON;
 
@@ -30,7 +35,12 @@ BEGIN
         SELECT
             X.Y.value('@Id', 'INT')
             , X.Y.value('@Nombre', 'VARCHAR(128)')
-        FROM @inXml.nodes('/Datos/TiposEvento/TipoEvento') AS X(Y);
+        FROM @inXml.nodes('/Datos/TiposEvento/TipoEvento') AS X(Y)
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM [dbo].[TipoEvento] AS TE
+            WHERE (TE.[Id] = X.Y.value('@Id', 'INT'))
+        );
 
         SET IDENTITY_INSERT [dbo].[TipoEvento] OFF;
 
@@ -46,7 +56,12 @@ BEGIN
             X.Y.value('@Id', 'INT')
             , X.Y.value('@Nombre', 'VARCHAR(128)')
             , X.Y.value('@TipoAccion', 'VARCHAR(128)')
-        FROM @inXml.nodes('/Datos/TiposMovimientos/TipoMovimiento') AS X(Y);
+        FROM @inXml.nodes('/Datos/TiposMovimientos/TipoMovimiento') AS X(Y)
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM [dbo].[TipoMovimiento] AS TM
+            WHERE (TM.[Id] = X.Y.value('@Id', 'INT'))
+        );
 
         SET IDENTITY_INSERT [dbo].[TipoMovimiento] OFF;
 
@@ -58,7 +73,12 @@ BEGIN
         SELECT
             X.Y.value('@Codigo', 'VARCHAR(8)')
             , X.Y.value('@Descripcion', 'VARCHAR(MAX)')
-        FROM @inXml.nodes('/Datos/Error/error') AS X(Y);
+        FROM @inXml.nodes('/Datos/Error/error') AS X(Y)
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM [dbo].[Error] AS ER
+            WHERE (ER.[Codigo] = X.Y.value('@Codigo', 'VARCHAR(8)'))
+        );
 
         SET IDENTITY_INSERT [dbo].[Usuario] ON;
 
@@ -101,7 +121,12 @@ BEGIN
             , X.Y.value('@FechaContratacion', 'DATE')
             , 0
             , 1
-        FROM @inXml.nodes('/Datos/Empleados/empleado') AS X(Y);
+        FROM @inXml.nodes('/Datos/Empleados/empleado') AS X(Y)
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM [dbo].[Empleado] AS E
+            WHERE (E.[ValorDocumentoIdentidad] = X.Y.value('@ValorDocumentoIdentidad', 'VARCHAR(16)'))
+        );
 
         SET @outResultCode = 0;
     END TRY

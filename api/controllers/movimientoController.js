@@ -42,7 +42,8 @@ async function obtenerMovimientos(req, res, next) {
 async function insertarMovimiento(req, res, next) {
   try {
     const { valorDocumento } = req.params;
-    const { nombreTipoMovimiento, monto, username, ip } = req.body;
+    const { nombreTipoMovimiento, monto, username } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     const conexion = await sql.connect(config.sql);
 
     const empleadoResult = await conexion

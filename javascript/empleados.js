@@ -1,9 +1,18 @@
 /* Carga de catálogos en selects
    ===================================================== */
-function cargarPuestos() {
+async function cargarPuestos() {
   const select = $("puestoEmpleado");
-  select.innerHTML = `<option value="">Seleccione un puesto</option>` +
-    puestos.map(p => `<option value="${p}">${p}</option>`).join("");
+
+  try {
+    const respuesta = await fetch(`${API_BASE}/catalogos/puestos`);
+    const lista = await respuesta.json();
+
+    select.innerHTML = `<option value="">Seleccione un puesto</option>` +
+      lista.map(p => `<option value="${p.Nombre}">${p.Nombre}</option>`).join("");
+  } catch (err) {
+    console.error("Error al cargar puestos:", err);
+    select.innerHTML = `<option value="">Error al cargar puestos</option>`;
+  }
 }
 
 /* Filtros de empleados
@@ -18,31 +27,18 @@ function detectarTipoFiltro(valor) {
   return "invalido";
 }
 
-function filtrarEmpleados(lista, filtro) {
-  const texto = filtro.trim().toLowerCase();
-  const tipo = detectarTipoFiltro(filtro);
-
-  if (tipo === "todos") return lista;
-  if (tipo === "nombre") return lista.filter(e => e.nombre.toLowerCase().includes(texto));
-  if (tipo === "documento") return lista.filter(e => e.valorDocumentoIdentidad.includes(filtro.trim()));
-
-  return null;
-}
-
 /* Tabla de empleados
    ===================================================== */
 function cargarTabla(lista) {
   const tabla = $("tabla-empleados");
   tabla.innerHTML = "";
 
-  const ordenada = [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-  if (!ordenada.length) {
+  if (!lista.length) {
     tabla.innerHTML = `<tr><td colspan="6">No se encontraron empleados.</td></tr>`;
     return;
   }
 
-  ordenada.forEach(e => {
+  lista.forEach(e => {
     const fila = document.createElement("tr");
     fila.innerHTML = crearFilaEmpleado(e);
     tabla.appendChild(fila);
@@ -50,41 +46,29 @@ function cargarTabla(lista) {
 }
 
 function crearFilaEmpleado(e) {
+  const doc = e.ValorDocumentoIdentidad;
+  const nombre = e.Nombre;
+  const puesto = e.NombrePuesto || e.Puesto || "";
+  const saldo = e.SaldoVacaciones;
+  const activo = e.EsActivo;
+
   return `
-    <td>${e.valorDocumentoIdentidad}</td>
-    <td>${e.nombre}</td>
-    <td>${e.puesto}</td>
-    <td>${formatearSaldo(e.saldoVacaciones)}</td>
-    <td class="${e.esActivo ? "estadoActivo" : "estadoInactivo"}">
-      ${e.esActivo ? "Activo" : "Inactivo"}
+    <td>${doc}</td>
+    <td>${nombre}</td>
+    <td>${puesto}</td>
+    <td>${formatearSaldo(saldo)}</td>
+    <td class="${activo ? "estadoActivo" : "estadoInactivo"}">
+      ${activo ? "Activo" : "Inactivo"}
     </td>
     <td>
       <div class="accionesTabla">
-        <button class="btn btnSecundario btnAccion" data-accion="consultar" data-id="${e.id}">Consultar</button>
-        <button class="btn btnSecundario btnAccion" data-accion="editar" data-id="${e.id}">Editar</button>
-        <button class="btn btnPeligro btnAccion" data-accion="eliminar" data-id="${e.id}">Eliminar</button>
-        <button class="btn btnPrimario btnAccion" data-accion="movimientos" data-id="${e.id}">Movimientos</button>
+        <button class="btn btnSecundario btnAccion" data-accion="consultar" data-doc="${doc}">Consultar</button>
+        <button class="btn btnSecundario btnAccion" data-accion="editar" data-doc="${doc}">Editar</button>
+        <button class="btn btnPeligro btnAccion" data-accion="eliminar" data-doc="${doc}">Eliminar</button>
+        <button class="btn btnPrimario btnAccion" data-accion="movimientos" data-doc="${doc}">Movimientos</button>
       </div>
     </td>
   `;
-}
-
-/* Validaciones de empleado
-   ===================================================== */
-function validarEmpleado(documento, nombre, puesto, idIgnorar = null) {
-  if (!documento || !nombre || !puesto) return "Todos los campos son obligatorios.";
-  if (!/^\d+$/.test(documento)) return "El documento debe contener solo números.";
-  if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(nombre)) return "El nombre debe contener solo letras y espacios.";
-
-  if (empleados.some(e => e.id !== idIgnorar && e.valorDocumentoIdentidad === documento)) {
-    return "Ya existe un empleado con ese documento.";
-  }
-
-  if (empleados.some(e => e.id !== idIgnorar && e.nombre.toLowerCase() === nombre.toLowerCase())) {
-    return "Ya existe un empleado con ese nombre.";
-  }
-
-  return null;
 }
 
 /* CRUD de empleados
@@ -96,94 +80,163 @@ function limpiarFormularioEmpleado() {
   $("subtitulo-formulario").textContent = "Ingrese los datos del nuevo empleado o modifique los datos del empleado seleccionado.";
 }
 
-function consultarEmpleado(id) {
-  const e = empleados.find(x => x.id === id);
+async function consultarEmpleado(doc) {
+  try {
+    const respuesta = await fetch(`${API_BASE}/empleados/${doc}`);
+    const e = await respuesta.json();
 
-  $("detalle-empleado").innerHTML = `
-    <div class="detalleLista">
-      <div><strong>Documento:</strong> ${e.valorDocumentoIdentidad}</div>
-      <div><strong>Nombre:</strong> ${e.nombre}</div>
-      <div><strong>Puesto:</strong> ${e.puesto}</div>
-      <div><strong>Saldo vacaciones:</strong> ${formatearSaldo(e.saldoVacaciones)}</div>
-      <div><strong>Estado:</strong> ${e.esActivo ? "Activo" : "Inactivo"}</div>
-    </div>
-  `;
+    if (!respuesta.ok) {
+      mostrarMensaje($("mensaje-principal"), e.message || "Error al consultar empleado.", "error");
+      return;
+    }
 
-  $("modal-detalle").classList.remove("oculto");
-}
+    $("detalle-empleado").innerHTML = `
+      <div class="detalleLista">
+        <div><strong>Documento:</strong> ${e.ValorDocumentoIdentidad}</div>
+        <div><strong>Nombre:</strong> ${e.Nombre}</div>
+        <div><strong>Puesto:</strong> ${e.NombrePuesto}</div>
+        <div><strong>Saldo vacaciones:</strong> ${formatearSaldo(e.SaldoVacaciones)}</div>
+        <div><strong>Estado:</strong> ${e.EsActivo ? "Activo" : "Inactivo"}</div>
+      </div>
+    `;
 
-function editarEmpleado(id) {
-  const e = empleados.find(x => x.id === id);
-
-  $("titulo-formulario").textContent = "Editar empleado";
-  $("subtitulo-formulario").textContent =
-    `Datos actuales: ${e.valorDocumentoIdentidad} - ${e.nombre} | Puesto: ${e.puesto} | Saldo: ${formatearSaldo(e.saldoVacaciones)}`;
-  $("idEmpleadoEditar").value = e.id;
-  $("valorDocumentoIdentidad").value = e.valorDocumentoIdentidad;
-  $("nombreEmpleado").value = e.nombre;
-  $("puestoEmpleado").value = e.puesto;
-
-  limpiarMensaje($("mensaje-formulario"));
-  mostrarVista("vista-formulario");
-}
-
-function eliminarEmpleado(id) {
-  const e = empleados.find(x => x.id === id);
-  const ok = confirm(`¿Está seguro de eliminar este empleado?\n\nDocumento: ${e.valorDocumentoIdentidad}\nNombre: ${e.nombre}`);
-
-  if (!ok) {
-    registrarBitacora("Intento de borrado", `${e.valorDocumentoIdentidad}, ${e.nombre}, ${e.puesto}, ${e.saldoVacaciones}`);
-    return;
+    $("modal-detalle").classList.remove("oculto");
+  } catch (err) {
+    mostrarMensaje($("mensaje-principal"), "No se pudo conectar con el servidor.", "error");
   }
-
-  e.esActivo = false;
-  registrarBitacora("Borrado exitoso", `${e.valorDocumentoIdentidad}, ${e.nombre}, ${e.puesto}, ${e.saldoVacaciones}`);
-
-  cargarTabla(empleados);
-  mostrarMensaje($("mensaje-principal"), "Empleado eliminado lógicamente.");
 }
 
-function guardarEmpleadoDesdeFormulario() {
-  const idEditar = Number($("idEmpleadoEditar").value) || null;
+async function editarEmpleado(doc) {
+  try {
+    const respuesta = await fetch(`${API_BASE}/empleados/${doc}`);
+    const e = await respuesta.json();
+
+    if (!respuesta.ok) {
+      mostrarMensaje($("mensaje-principal"), e.message || "Error al consultar empleado.", "error");
+      return;
+    }
+
+    $("titulo-formulario").textContent = "Editar empleado";
+    $("subtitulo-formulario").textContent =
+      `Datos actuales: ${e.ValorDocumentoIdentidad} - ${e.Nombre} | Puesto: ${e.NombrePuesto} | Saldo: ${formatearSaldo(e.SaldoVacaciones)}`;
+    $("idEmpleadoEditar").value = e.ValorDocumentoIdentidad;
+    $("valorDocumentoIdentidad").value = e.ValorDocumentoIdentidad;
+    $("nombreEmpleado").value = e.Nombre;
+    $("puestoEmpleado").value = e.NombrePuesto;
+
+    limpiarMensaje($("mensaje-formulario"));
+    mostrarVista("vista-formulario");
+  } catch (err) {
+    mostrarMensaje($("mensaje-principal"), "No se pudo conectar con el servidor.", "error");
+  }
+}
+
+async function eliminarEmpleado(doc) {
+  const sesion = obtenerSesion();
+
+  try {
+    const respConsulta = await fetch(`${API_BASE}/empleados/${doc}`);
+    const e = await respConsulta.json();
+
+    if (!respConsulta.ok) {
+      mostrarMensaje($("mensaje-principal"), e.message || "Error al consultar empleado.", "error");
+      return;
+    }
+
+    const ok = confirm(`¿Está seguro de eliminar este empleado?\n\nDocumento: ${e.ValorDocumentoIdentidad}\nNombre: ${e.Nombre}`);
+
+    await fetch(`${API_BASE}/empleados/${doc}/eliminar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        confirmado: ok,
+        username: sesion?.username || ""
+      })
+    });
+
+    if (!ok) return;
+
+    await cargarEmpleadosDesdeApi();
+    mostrarMensaje($("mensaje-principal"), "Empleado eliminado lógicamente.");
+  } catch (err) {
+    mostrarMensaje($("mensaje-principal"), "No se pudo conectar con el servidor.", "error");
+  }
+}
+
+async function guardarEmpleadoDesdeFormulario() {
+  const docEditar = $("idEmpleadoEditar").value || null;
   const documento = $("valorDocumentoIdentidad").value.trim();
   const nombre = $("nombreEmpleado").value.trim();
   const puesto = $("puestoEmpleado").value;
-  const error = validarEmpleado(documento, nombre, puesto, idEditar);
+  const sesion = obtenerSesion();
 
-  if (error) {
-    registrarBitacora(idEditar ? "Update no exitoso" : "Insercion no exitosa", `${error}, ${documento}, ${nombre}, ${puesto}`);
-    mostrarMensaje($("mensaje-formulario"), error, "error");
+  if (!documento || !nombre || !puesto) {
+    mostrarMensaje($("mensaje-formulario"), "Todos los campos son obligatorios.", "error");
     return;
   }
 
-  idEditar ? actualizarEmpleado(idEditar, documento, nombre, puesto) : insertarEmpleado(documento, nombre, puesto);
+  try {
+    let respuesta;
 
-  limpiarFormularioEmpleado();
-  cargarTabla(empleados);
-  mostrarVista("vista-principal");
+    if (docEditar) {
+      respuesta = await fetch(`${API_BASE}/empleados/${docEditar}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          valorDocumentoNuevo: documento,
+          nombreNuevo: nombre,
+          nombrePuestoNuevo: puesto,
+          username: sesion?.username || ""
+        })
+      });
+    } else {
+      respuesta = await fetch(`${API_BASE}/empleados`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          valorDocumentoIdentidad: documento,
+          nombre,
+          nombrePuesto: puesto,
+          fechaContratacion: new Date().toISOString().slice(0, 10),
+          saldoVacaciones: 0,
+          esActivo: true,
+          username: sesion?.username || ""
+        })
+      });
+    }
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok) {
+      mostrarMensaje($("mensaje-formulario"), datos.message || "Error al guardar empleado.", "error");
+      return;
+    }
+
+    limpiarFormularioEmpleado();
+    await cargarEmpleadosDesdeApi();
+    mostrarVista("vista-principal");
+    mostrarMensaje($("mensaje-principal"), docEditar ? "Empleado actualizado correctamente." : "Empleado insertado correctamente.");
+  } catch (err) {
+    mostrarMensaje($("mensaje-formulario"), "No se pudo conectar con el servidor.", "error");
+  }
 }
 
-function actualizarEmpleado(idEditar, documento, nombre, puesto) {
-  const emp = empleados.find(x => x.id === idEditar);
-  const antes = `${emp.valorDocumentoIdentidad}, ${emp.nombre}, ${emp.puesto}`;
+/* Obtener empleados desde API (usado por varias funciones)
+   ===================================================== */
+async function cargarEmpleadosDesdeApi(queryParams = "") {
+  try {
+    const sesion = obtenerSesion();
+    const sep = queryParams ? "&" : "?";
+    const url = queryParams
+      ? `${API_BASE}/empleados?${queryParams}&username=${encodeURIComponent(sesion?.username || "")}`
+      : `${API_BASE}/empleados?username=${encodeURIComponent(sesion?.username || "")}`;
 
-  Object.assign(emp, { valorDocumentoIdentidad: documento, nombre, puesto });
+    const respuesta = await fetch(url);
+    const lista = await respuesta.json();
 
-  registrarBitacora("Update exitoso", `Antes: ${antes}. Después: ${documento}, ${nombre}, ${puesto}. Saldo: ${emp.saldoVacaciones}`);
-  mostrarMensaje($("mensaje-principal"), "Empleado actualizado correctamente.");
-}
-
-function insertarEmpleado(documento, nombre, puesto) {
-  empleados.push({
-    id: Math.max(...empleados.map(x => x.id)) + 1,
-    valorDocumentoIdentidad: documento,
-    nombre,
-    puesto,
-    fechaContratacion: new Date().toISOString().slice(0, 10),
-    saldoVacaciones: 0,
-    esActivo: true
-  });
-
-  registrarBitacora("Insercion exitosa", `${documento}, ${nombre}, ${puesto}`);
-  mostrarMensaje($("mensaje-principal"), "Empleado insertado correctamente.");
+    cargarTabla(lista);
+  } catch (err) {
+    console.error("Error al cargar empleados:", err);
+    $("tabla-empleados").innerHTML = `<tr><td colspan="6">Error al cargar empleados del servidor.</td></tr>`;
+  }
 }

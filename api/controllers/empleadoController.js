@@ -5,7 +5,8 @@ const { obtenerMensajeError } = require("../services/errorService");
 
 async function insertarEmpleado(req, res, next) {
   try {
-    const { valorDocumentoIdentidad, nombre, nombrePuesto, fechaContratacion, saldoVacaciones, esActivo, username, ip } = req.body;
+    const { valorDocumentoIdentidad, nombre, nombrePuesto, fechaContratacion, saldoVacaciones, esActivo, username } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     const conexion = await sql.connect(config.sql);
 
     if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(nombre)) {
@@ -53,7 +54,8 @@ async function insertarEmpleado(req, res, next) {
 
 async function obtenerEmpleados(req, res, next) {
   try {
-    const { filtroNombre, filtroDocumento, username, ip } = req.query;
+    const { filtroNombre, filtroDocumento, username } = req.query;
+    const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     const conexion = await sql.connect(config.sql);
 
     let resultado;
@@ -115,7 +117,8 @@ async function consultarEmpleado(req, res, next) {
 async function actualizarEmpleado(req, res, next) {
   try {
     const { valorDocumento } = req.params;
-    const { valorDocumentoNuevo, nombreNuevo, nombrePuestoNuevo, username, ip } = req.body;
+    const { valorDocumentoNuevo, nombreNuevo, nombrePuestoNuevo, username } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     const conexion = await sql.connect(config.sql);
 
     const empleadoResult = await conexion
@@ -173,7 +176,8 @@ async function actualizarEmpleado(req, res, next) {
 async function eliminarEmpleado(req, res, next) {
   try {
     const { valorDocumento } = req.params;
-    const { confirmado, username, ip } = req.body;
+    const { confirmado, username } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     const conexion = await sql.connect(config.sql);
 
     const empleadoResult = await conexion

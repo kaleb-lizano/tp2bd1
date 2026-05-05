@@ -3,13 +3,24 @@ const path = require("path");
 const xml2js = require("xml2js");
 const sql = require("mssql");
 const config = require("../config");
+const { registrarEvento } = require("./eventoService");
 
 async function cargarDatosXml() {
   const xmlPath = path.join(__dirname, "../../data/datosCarga.xml");
-  const xmlData = fs.readFileSync(xmlPath, "utf-8");
+  const xmlRaw = fs.readFileSync(xmlPath, "utf-8");
+  const xmlData = xmlRaw.replace(/<\?xml[^?]*\?>\s*/, "");
   const conexion = await sql.connect(config.sql);
 
-  console.log("Cargando catalogs y empleados desde XML...");
+  const movimientosExistentes = await conexion.request()
+    .output("outResultCode", sql.Int)
+    .execute("usp_ObtenerMovimientos");
+
+  if (movimientosExistentes.recordset.length > 0) {
+    console.log("Los datos del XML ya fueron cargados previamente. Omitiendo carga.");
+    return;
+  }
+
+  console.log("Cargando catalogos y empleados desde XML...");
   const resultCarga = await conexion.request()
     .input("inXml", sql.Xml, xmlData)
     .output("outResultCode", sql.Int)
@@ -19,13 +30,22 @@ async function cargarDatosXml() {
     throw new Error("Error al cargar catalogos y empleados desde XML. Codigo: " + resultCarga.output.outResultCode);
   }
 
-  console.log("Cargando Movimientos...");
   const parser = new xml2js.Parser({ explicitArray: false });
   const result = await parser.parseStringPromise(xmlData);
   const datos = result.Datos;
 
+  if (datos.Empleados && datos.Empleados.empleado) {
+    const empleados = Array.isArray(datos.Empleados.empleado) ? datos.Empleados.empleado : [datos.Empleados.empleado];
+    console.log("Registrando eventos de inserción de empleados...");
+    for (const emp of empleados) {
+      const descripcion = `${emp.$.ValorDocumentoIdentidad}, ${emp.$.Nombre}, ${emp.$.Puesto}`;
+      await registrarEvento(6, descripcion, "UsuarioScripts", "0.0.0.0", emp.$.FechaContratacion);
+    }
+  }
+
   if (datos.Movimientos && datos.Movimientos.movimiento) {
     const movimientos = Array.isArray(datos.Movimientos.movimiento) ? datos.Movimientos.movimiento : [datos.Movimientos.movimiento];
+    console.log("Cargando Movimientos...");
     for (const mov of movimientos) {
       const nombreTipoMovimiento = mov.$.IdTipoMovimiento;
 
@@ -65,6 +85,9 @@ async function cargarDatosXml() {
         .input("inPostTime", sql.DateTime, new Date(mov.$.PostTime))
         .output("outResultCode", sql.Int)
         .execute("usp_InsertarMovimiento");
+
+      const descripcionMov = `${mov.$.ValorDocId}, ${empleado.Nombre}, ${nuevoSaldo}, ${nombreTipoMovimiento}, ${mov.$.Monto}`;
+      await registrarEvento(14, descripcionMov, mov.$.PostByUser, mov.$.PostInIP, mov.$.PostTime);
     }
   }
 

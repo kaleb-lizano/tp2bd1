@@ -75,7 +75,7 @@ CREATE TABLE [dbo].[BitacoraEvento]
 	[Id] INT IDENTITY(1,1) PRIMARY KEY
 	, [IdTipoEvento] INT NOT NULL
 	, [Descripcion] VARCHAR(MAX) NOT NULL
-	, [IdPostByUser] INT NOT NULL
+	, [IdPostByUser] INT NULL
 	, [PostInIP] VARCHAR(128) NOT NULL
 	, [PostTime] DATETIME NOT NULL
 	, CONSTRAINT [FK_BitacoraEvento_TipoEvento]

@@ -1,6 +1,15 @@
-/* Inicialización de la aplicación principal
+/* =====================================================
+   API – funciones de comunicación con el backend
    ===================================================== */
-function initApp() {
+async function apiCargarXml() {
+  const resp = await fetch(`${API_BASE}/admin/cargar-xml`, { method: "POST" });
+  return resp.json();
+}
+
+/* =====================================================
+   Inicialización de la aplicación principal
+   ===================================================== */
+async function initApp() {
   const sesion = obtenerSesion();
 
   if (!sesion) {
@@ -11,9 +20,20 @@ function initApp() {
   $("usuario-activo").textContent = `Usuario activo: ${sesion.username}`;
   $("btn-logout").addEventListener("click", cerrarSesion);
 
-  cargarPuestos();
-  cargarTiposMovimiento();
-  cargarTabla(empleados);
+  /* Cargar datos XML solo la primera vez
+     ===================================================== */
+  if (!localStorage.getItem(STORAGE_KEYS.xmlCargado)) {
+    try {
+      await apiCargarXml();
+      localStorage.setItem(STORAGE_KEYS.xmlCargado, "true");
+    } catch (err) {
+      console.warn("Aviso al cargar XML desde frontend:", err.message);
+    }
+  }
+
+  await cargarPuestos();
+  await cargarTiposMovimiento();
+  await cargarEmpleadosDesdeApi();
   configurarEventosApp();
 }
 
@@ -26,16 +46,17 @@ function configurarEventosApp() {
     mostrarVista("vista-formulario");
   });
 
-  $("btn-cancelar-formulario").addEventListener("click", () => {
+  $("btn-cancelar-formulario").addEventListener("click", async () => {
     limpiarFormularioEmpleado();
+    await cargarEmpleadosDesdeApi();
     mostrarVista("vista-principal");
   });
 
   $("btn-filtrar").addEventListener("click", filtrarDesdeInterfaz);
 
-  $("btn-limpiar-filtro").addEventListener("click", () => {
+  $("btn-limpiar-filtro").addEventListener("click", async () => {
     $("filtro-empleado").value = "";
-    cargarTabla(empleados);
+    await cargarEmpleadosDesdeApi();
     limpiarMensaje($("mensaje-principal"));
   });
 
@@ -50,15 +71,15 @@ function configurarEventosApp() {
     $("modal-detalle").classList.add("oculto");
   });
 
-  $("btn-volver-desde-movimientos").addEventListener("click", () => {
-    cargarTabla(empleados);
+  $("btn-volver-desde-movimientos").addEventListener("click", async () => {
+    await cargarEmpleadosDesdeApi();
     mostrarVista("vista-principal");
   });
 
   $("btn-mostrar-movimiento").addEventListener("click", prepararFormularioMovimiento);
 
   $("btn-cancelar-movimiento").addEventListener("click", () => {
-    verMovimientos(idEmpleadoSeleccionado);
+    verMovimientos(docEmpleadoSeleccionado);
   });
 
   $("form-movimiento").addEventListener("submit", e => {
@@ -67,7 +88,7 @@ function configurarEventosApp() {
   });
 }
 
-function filtrarDesdeInterfaz() {
+async function filtrarDesdeInterfaz() {
   limpiarMensaje($("mensaje-principal"));
 
   const filtro = $("filtro-empleado").value;
@@ -82,24 +103,29 @@ function filtrarDesdeInterfaz() {
     return;
   }
 
-  if (tipo === "nombre") registrarBitacora("Consulta con filtro de nombre", filtro.trim());
-  if (tipo === "documento") registrarBitacora("Consulta con filtro de cedula", filtro.trim());
+  let queryParams = "";
 
-  cargarTabla(filtrarEmpleados(empleados, filtro));
+  if (tipo === "nombre") {
+    queryParams = `filtroNombre=${encodeURIComponent(filtro.trim())}`;
+  } else if (tipo === "documento") {
+    queryParams = `filtroDocumento=${encodeURIComponent(filtro.trim())}`;
+  }
+
+  await cargarEmpleadosDesdeApi(queryParams);
 }
 
 function manejarAccionTabla(e) {
   const btn = e.target.closest("button[data-accion]");
   if (!btn) return;
 
-  const id = Number(btn.dataset.id);
+  const doc = btn.dataset.doc;
 
   ({
     consultar: consultarEmpleado,
     editar: editarEmpleado,
     eliminar: eliminarEmpleado,
     movimientos: verMovimientos
-  }[btn.dataset.accion])(id);
+  }[btn.dataset.accion])(doc);
 }
 
 /* Punto de entrada

@@ -37,7 +37,8 @@ async function verificarBloqueoLogin(conexion, ip, username) {
 
 async function login(req, res, next) {
   try {
-    const { username, password, ip } = req.body;
+    const { username, password } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     const conexion = await sql.connect(config.sql);
 
     const { intentosFallidos, bloqueadoReciente } = await verificarBloqueoLogin(conexion, ip, username);
@@ -82,7 +83,8 @@ async function login(req, res, next) {
 
 async function logout(req, res, next) {
   try {
-    const { username, ip } = req.body;
+    const { username } = req.body;
+    const ip = req.headers['x-forwarded-for'] || req.ip || '127.0.0.1';
     await registrarEvento(4, "", username, ip);
     res.status(200).json({ message: "Logout exitoso" });
   } catch (err) {

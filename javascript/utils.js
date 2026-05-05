@@ -2,9 +2,12 @@
    ===================================================== */
 const STORAGE_KEYS = {
   sesion: "cv_sesion_usuario",
-  intentos: "cv_intentos_login",
-  bitacora: "cv_bitacora_eventos"
+  xmlCargado: "cv_xml_cargado"
 };
+
+/* URL base de la API
+   ===================================================== */
+const API_BASE = "/api";
 
 /* Utilidades generales
    ===================================================== */
@@ -31,13 +34,15 @@ function formatearSaldo(valor) {
   return `${Number(valor).toLocaleString("es-CR")} días`;
 }
 
-function formatearFecha(fechaIso) {
+function formatearFechaSinHora(fechaIso) {
   if (!fechaIso) return "-";
-  const [a, m, d] = fechaIso.split("-");
-  return d && m && a ? `${d}/${m}/${a}` : fechaIso;
+  return new Date(fechaIso).toISOString().split("T")[0];
 }
 
-function obtenerIpDummy() { return "127.0.0.1"; }
+function formatearFecha(fechaIso) {
+  if (!fechaIso) return "-";
+  return new Date(fechaIso).toUTCString();
+}
 
 /* Sesión
    ===================================================== */
@@ -45,33 +50,23 @@ function obtenerSesion() {
   return JSON.parse(localStorage.getItem(STORAGE_KEYS.sesion) || "null");
 }
 
-function guardarSesion(usuario) {
-  localStorage.setItem(
-    STORAGE_KEYS.sesion,
-    JSON.stringify({ id: usuario.id, username: usuario.username })
-  );
+function guardarSesion(datos) {
+  localStorage.setItem(STORAGE_KEYS.sesion, JSON.stringify(datos));
 }
 
-function cerrarSesion() {
-  registrarBitacora("Logout", "");
-  localStorage.removeItem(STORAGE_KEYS.sesion);
-  location.href = "login.html";
-}
-
-/* Bitácora dummy
-   ===================================================== */
-function registrarBitacora(tipoEvento, descripcion = "") {
-  const bitacora = JSON.parse(localStorage.getItem(STORAGE_KEYS.bitacora) || "[]");
+async function cerrarSesion() {
   const sesion = obtenerSesion();
 
-  bitacora.push({
-    tipoEvento,
-    descripcion,
-    idPostByUser: sesion?.id || null,
-    username: sesion?.username || "sin sesión",
-    postInIP: obtenerIpDummy(),
-    postTime: new Date().toISOString()
-  });
+  try {
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: sesion?.username || "" })
+    });
+  } catch (err) {
+    console.warn("Error al registrar logout:", err);
+  }
 
-  localStorage.setItem(STORAGE_KEYS.bitacora, JSON.stringify(bitacora));
+  localStorage.removeItem(STORAGE_KEYS.sesion);
+  location.href = "login.html";
 }
